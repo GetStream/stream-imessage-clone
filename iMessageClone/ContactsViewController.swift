@@ -9,8 +9,13 @@
 import UIKit
 import StreamChat
 import StreamChatCore
+import StreamChatClient
 
 class ContactsViewController: ChannelsViewController {
+    
+    private lazy var chatButton: UIBarButtonItem = {
+        UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(createChatTapped))
+    }()
     
     override func viewDidLoad() {
         channelsPresenter = ChannelsPresenter(filter: .currentUserInMembers)
@@ -22,6 +27,8 @@ class ContactsViewController: ChannelsViewController {
         tableView.tableFooterView = nil
         
         navigationItem.largeTitleDisplayMode = .always
+        
+        navigationItem.rightBarButtonItem = chatButton
         
         deleteChannelBySwipe = true
         
@@ -117,5 +124,40 @@ class ContactsViewController: ChannelsViewController {
                                  .normal: .init(tintColor: borderColor, borderWidth: borderWidth)]
         style.composer.edgeInsets.left = 60
         style.composer.edgeInsets.right = 16
+    }
+    
+    @objc private func createChatTapped() {
+        let alert = UIAlertController(title: "Create new chat", message: "Enter channel name and id", preferredStyle: .alert)
+        
+        alert.addTextField { (textField) in
+            textField.placeholder = "Channel Name"
+        }
+        
+        alert.addTextField { (textField) in
+            textField.placeholder = "Channel ID"
+        }
+        
+        alert.addAction(.init(title: "Create", style: .default, handler: { [weak self, weak alert] (_) in
+            guard let textFields = alert?.textFields, textFields.count > 1 else { return }
+            guard let name = textFields[0].text, let id = textFields[1].text else { return }
+            self?.createChat(named: name, id: id)
+        }))
+        
+        alert.addAction(.init(title: "Cancel", style: .destructive, handler: nil))
+        
+        present(alert, animated: true, completion: nil)
+    }
+    
+    private func createChat(named name: String, id: String) {
+        let channel = Channel(type: .messaging, id: id, name: name, imageURL: URL(string: "https://i.picsum.photos/id/\(Int.random(in: 1...300))/200/200.jpg")!, members: [User.current.asMember])
+        channel.create { [weak self] (result) in
+            do {
+                let response = try result.get()
+                print("Channel created: \(response)")
+                self?.channelsPresenter.reload()
+            } catch {
+                print("Error when creating channel: \(error)")
+            }
+        }
     }
 }
