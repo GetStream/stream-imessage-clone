@@ -1,3 +1,5 @@
+> **This repository is archived and no longer maintained.** For a current alternative, see [swiftui-iMessage-clone](https://github.com/GetStream/swiftui-iMessage-clone).
+
 # iMessage Clone using StreamChat iOS SDK
 iMessage Clone Tutorial Repo from [Build an iMessage Clone with The Stream Chat iOS SDK](https://getstream.io/blog/build-imessage-clone/)
 
